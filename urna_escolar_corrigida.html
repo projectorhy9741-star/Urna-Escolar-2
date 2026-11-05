@@ -1,0 +1,282 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="theme-color" content="#123c70">
+<title>Urna Escolar</title>
+<style>
+:root{--navy:#123c70;--blue:#1769aa;--light:#eef3f8;--gold:#f2c94c;--ink:#18212b;--green:#247a43}
+*{box-sizing:border-box} body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#e9edf2;color:var(--ink)}
+header{background:linear-gradient(110deg,#123c70,#1769aa);color:white;padding:18px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+header h1{font-size:clamp(20px,4vw,30px);margin:0;letter-spacing:.5px} header small{opacity:.9}
+.wrap{max-width:1100px;margin:20px auto;padding:0 14px}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+button{border:0;border-radius:9px;padding:13px 16px;font-weight:700;cursor:pointer;font-size:15px}
+.tab{background:white;color:var(--navy);border:1px solid #cbd5df}.tab.active{background:var(--navy);color:white}
+.panel{background:white;border-radius:14px;padding:20px;box-shadow:0 3px 14px #12243a12}
+.hidden{display:none!important}
+.notice{background:#fff7dc;border-left:5px solid var(--gold);padding:12px 14px;border-radius:7px;line-height:1.45;margin-bottom:16px}
+h2{margin:0 0 16px;color:var(--navy)} label{display:block;font-weight:700;margin:12px 0 6px}
+input[type=text],input[type=number],input[type=password]{width:100%;padding:12px;border:1px solid #bbc7d2;border-radius:8px;font-size:16px}
+input[type=file]{width:100%;margin:8px 0}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.candidate{border:1px solid #cbd5df;border-radius:12px;padding:14px;background:#f9fbfd}
+.preview{width:100%;height:130px;object-fit:contain;background:#e8edf2;border-radius:8px;margin-top:8px}
+.primary{background:var(--blue);color:white}.dark{background:var(--navy);color:white}.danger{background:#a72b2b;color:white}.lightbtn{background:#e7edf3;color:var(--navy)}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:14px 0}
+.stat{background:#edf3f8;border-radius:10px;padding:14px;text-align:center}.stat strong{display:block;font-size:28px;color:var(--navy)}
+.status{font-weight:700;color:var(--green)}
+.ballot{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:stretch;max-width:850px;margin:auto}
+.screen{background:#d9e0e7;border:2px solid #7c8b99;border-radius:8px;padding:18px;min-height:310px;display:flex;flex-direction:column;justify-content:center}
+.screenhead{text-align:center;font-weight:700;font-size:13px;letter-spacing:1px;margin-bottom:16px}
+.prompt{font-size:18px;margin-bottom:14px}
+.candidateview{display:flex;gap:14px;align-items:center;background:#f7f9fb;padding:12px;border:1px solid #9eabb7;border-radius:6px;min-height:110px}
+.candidateview img{width:90px;height:90px;object-fit:cover;background:#e0e5ea;border-radius:4px}
+.candidateview .name{font-size:20px;font-weight:700}.candidateview .number{font-size:28px;font-weight:800;color:var(--navy)}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;background:#cbd3dc;padding:12px;border-radius:8px}
+.pad button{background:#252d36;color:white;border-radius:5px;font-size:22px;min-height:54px;box-shadow:0 2px #111}
+.pad .blank{background:#f5f5f5;color:#111;font-size:13px}.pad .correct{background:#e8b43c;color:#111;font-size:13px}.pad .confirm{background:#238047;color:white;font-size:13px}
+.small{font-size:13px;color:#526170;line-height:1.45}
+.center{text-align:center}.big{font-size:26px;font-weight:800;color:var(--navy)}
+.voteTop{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:16px}
+.voteTop h2{margin:0}
+.fullscreenBtn{background:#123c70;color:#fff}
+#vote:fullscreen{width:100vw;height:100vh;max-width:none;margin:0;border-radius:0;padding:22px;overflow:auto;background:#fff}
+#vote:fullscreen .ballot{max-width:1050px}
+#vote:fullscreen .screen{min-height: min(48vh,420px)}
+#vote:fullscreen .pad button{min-height:clamp(54px,9vh,82px);font-size:clamp(20px,3vw,28px)}
+#vote:fullscreen .pad .blank,#vote:fullscreen .pad .correct,#vote:fullscreen .pad .confirm{font-size:clamp(12px,1.8vw,16px)}
+#vote:fullscreen .voteTop h2{font-size:clamp(18px,3vw,26px)}
+footer{text-align:center;color:#647180;font-size:12px;padding:22px}
+@media(max-width:650px){.grid,.ballot{grid-template-columns:1fr}.screen{min-height:250px}.statgrid{grid-template-columns:repeat(3,1fr)}.stat strong{font-size:22px}}
+</style>
+</head>
+<body>
+<header><div><h1>🗳️ URNA ESCOLAR</h1><small>Eleição do presidente da turma</small></div><div id="headerStatus">MODO DE DEMONSTRAÇÃO</div></header>
+<div class="wrap">
+<div class="notice"><b>Atenção:</b> esta versão inclui uma conexão experimental entre iPhone e iPad. Faça testes antes de qualquer uso. A conexão depende do serviço PeerJS e da rede; não é um sistema eleitoral certificado.</div>
+<div class="tabs">
+<button class="tab active" data-tab="vote">Urna (iPad)</button>
+<button class="tab" data-tab="admin">Painel (iPhone)</button>
+<button class="tab" data-tab="setup">Candidatos</button>
+</div>
+
+<section id="vote" class="panel">
+<div class="voteTop"><h2>Identificação da votação</h2><button class="fullscreenBtn" id="fullscreenBtn" type="button">⛶ TELA CHEIA</button></div>
+<div class="notice" id="ipadConnectBox">
+<b>Conectar ao iPhone</b>
+<p class="small">No iPhone, abra o Painel e crie uma conexão. Depois digite aqui o código e a senha mostrados lá.</p>
+<label for="hostCode">Código do iPhone</label><input id="hostCode" type="text" autocomplete="off" placeholder="Cole o código do iPhone">
+<label for="roomPin">Senha de 6 números</label><input id="roomPin" type="password" inputmode="numeric" maxlength="6" placeholder="Senha de 6 números">
+<div class="row"><button class="primary" id="connectBtn">CONECTAR AO IPHONE</button><span id="ipadConnStatus" class="small">Desconectado</span></div>
+</div>
+<div id="locked" class="center">
+<p>AGUARDE A LIBERAÇÃO DO RESPONSÁVEL</p>
+<div class="big">A urna está bloqueada</div>
+<p class="small">O responsável deve liberar uma votação no painel administrativo.</p>
+</div>
+<div id="ballotArea" class="hidden">
+<div class="ballot">
+<div class="screen">
+<div class="screenhead">ELEIÇÃO ESCOLAR</div>
+<div class="prompt">Digite o número do seu candidato:</div>
+<div id="digitDisplay" class="big" style="min-height:42px;letter-spacing:8px">_ _</div>
+<div id="candidateInfo" class="candidateview hidden">
+<img id="ballotPhoto" alt="Foto do candidato"><div><div id="ballotNumber" class="number"></div><div id="ballotName" class="name"></div></div>
+</div>
+<div id="ballotMessage" class="small">Use o teclado numérico na tela.</div>
+</div>
+<div class="pad" aria-label="Teclado numérico da urna">
+<button data-digit="1">1</button><button data-digit="2">2</button><button data-digit="3">3</button>
+<button data-digit="4">4</button><button data-digit="5">5</button><button data-digit="6">6</button>
+<button data-digit="7">7</button><button data-digit="8">8</button><button data-digit="9">9</button>
+<button class="blank" id="blankBtn">BRANCO</button><button data-digit="0">0</button><button class="correct" id="correctBtn">CORRIGE</button>
+<button class="confirm" style="grid-column:3" id="confirmBtn">CONFIRMA</button>
+</div>
+</div>
+</div>
+<div id="finished" class="hidden center"><div class="big">FIM</div><p>Voto registrado. Obrigado por participar!</p></div>
+</section>
+
+<section id="admin" class="panel hidden">
+<h2>Painel do responsável</h2>
+<div class="notice" id="connectionAdminBox">
+<b>Conexão com o iPad</b>
+<p class="small">Toque para criar uma sala. No iPad, digite o código e a senha que aparecerem aqui.</p>
+<div class="row"><button class="primary" id="createRoomBtn">CRIAR CONEXÃO</button><span id="phoneConnStatus" class="small">Ainda não conectado</span></div>
+<div id="roomDetails" class="hidden" style="margin-top:12px">
+<p><b>Código do iPhone:</b><br><code id="roomCode" style="user-select:all;overflow-wrap:anywhere"></code></p>
+<p><b>Senha:</b> <span id="roomPassword" class="big" style="letter-spacing:4px"></span></p>
+</div>
+</div>
+<div class="notice">Confira o aluno presencialmente antes de liberar a votação. Não registre o nome do aluno junto com a escolha do candidato: isso ajuda a preservar o sigilo do voto.</div>
+<div class="statgrid">
+<div class="stat"><strong id="countVoted">0</strong>Votos registrados</div>
+<div class="stat"><strong id="countLeft">50</strong>Votos restantes</div>
+<div class="stat"><strong id="countBlank">0</strong>Brancos</div>
+</div>
+<p id="adminState" class="status">Urna bloqueada — pronta para liberar o próximo voto.</p>
+<div class="row">
+<button class="primary" id="releaseBtn">LIBERAR PRÓXIMO VOTO</button>
+<button class="danger" id="closeBtn">ENCERRAR ELEIÇÃO</button>
+<button class="lightbtn" id="resetBtn">Reiniciar demonstração</button>
+</div>
+<p class="small">A liberação permite exatamente uma confirmação. A conexão é experimental. Não use como sistema oficial de eleição nem para dados pessoais.</p>
+<div id="results" class="hidden">
+<h3>Resultado demonstrativo</h3>
+<div id="resultRows"></div>
+</div>
+</section>
+
+<section id="setup" class="panel hidden">
+<h2>Cadastro dos candidatos</h2>
+<p class="small">Edite os nomes, números e fotos. As fotos escolhidas ficam guardadas apenas neste navegador.</p>
+<div class="grid">
+<div class="candidate">
+<h3>Candidato 1</h3>
+<label for="name1">Nome</label><input id="name1" type="text" placeholder="Nome do candidato 1">
+<label for="num1">Número (2 dígitos)</label><input id="num1" type="number" min="0" max="99" value="11">
+<label for="photo1">Foto</label><input id="photo1" type="file" accept="image/*"><img id="preview1" class="preview" alt="Prévia da foto 1">
+</div>
+<div class="candidate">
+<h3>Candidato 2</h3>
+<label for="name2">Nome</label><input id="name2" type="text" placeholder="Nome do candidato 2">
+<label for="num2">Número (2 dígitos)</label><input id="num2" type="number" min="0" max="99" value="22">
+<label for="photo2">Foto</label><input id="photo2" type="file" accept="image/*"><img id="preview2" class="preview" alt="Prévia da foto 2">
+</div>
+</div>
+<div class="row"><button class="primary" id="saveCandidates">SALVAR CANDIDATOS</button><span id="saveMsg" class="status"></span></div>
+</section>
+</div>
+<footer>URNA ESCOLAR • Protótipo demonstrativo</footer>
+<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+const MAX_VOTERS=50;
+let candidates=[{name:"Candidato 1",num:"11",photo:""},{name:"Candidato 2",num:"22",photo:""}];
+let released=false, closed=false, digits="", votes=[0,0], blanks=0, total=0, selected=null;
+let peer=null, activeConn=null, remoteMode=false, roomPin="", roomAuthorized=false, releaseSeq=0, pendingRemoteVote=false;
+function load(){try{const x=JSON.parse(localStorage.getItem("urnaDemo"));if(x){candidates=x.candidates||candidates;votes=x.votes||votes;blanks=x.blanks||0;total=x.total||0;closed=x.closed||false;}}catch(e){}}
+function persist(){localStorage.setItem("urnaDemo",JSON.stringify({candidates,votes,blanks,total,closed}));}
+function renderStats(){$("countVoted").textContent=total;$("countLeft").textContent=Math.max(0,MAX_VOTERS-total);$("countBlank").textContent=blanks;}
+function updateHeader(){$("headerStatus").textContent=closed?"ELEIÇÃO ENCERRADA":released?"VOTAÇÃO LIBERADA":"URNA BLOQUEADA";}
+function setPhoneStatus(t){$("phoneConnStatus").textContent=t;}
+function setIpadStatus(t){$("ipadConnStatus").textContent=t;}
+// Efeito sonoro original e curto de confirmação (não é uma gravação oficial do TSE).
+function playUrnaSound(){
+ try{
+  const AudioCtx=window.AudioContext||window.webkitAudioContext;
+  if(!AudioCtx)return;
+  const ctx=new AudioCtx();
+  const now=ctx.currentTime;
+  [[660,0,0.13],[880,0.16,0.16],[1046.5,0.35,0.22]].forEach(([freq,delay,duration])=>{
+   const osc=ctx.createOscillator(), gain=ctx.createGain();
+   osc.type="sine";osc.frequency.setValueAtTime(freq,now+delay);
+   gain.gain.setValueAtTime(0.0001,now+delay);
+   gain.gain.exponentialRampToValueAtTime(0.16,now+delay+0.018);
+   gain.gain.exponentialRampToValueAtTime(0.0001,now+delay+duration);
+   osc.connect(gain);gain.connect(ctx.destination);
+   osc.start(now+delay);osc.stop(now+delay+duration+0.02);
+  });
+  setTimeout(()=>ctx.close().catch(()=>{}),900);
+ }catch(e){/* áudio é complementar; o registro do voto não depende dele */}
+}
+function sendToIpad(payload){if(activeConn&&activeConn.open&&roomAuthorized)activeConn.send(payload);}
+function currentState(){return {type:"state",released,closed,seq:releaseSeq,total,blanks,votes};}
+function makeRoom(){
+ if(typeof Peer==="undefined"){alert("Não foi possível carregar o módulo de conexão. Abra o arquivo com internet e tente novamente.");return;}
+ if(peer&&!peer.destroyed)peer.destroy();
+ activeConn=null;roomAuthorized=false;{const a=new Uint32Array(1);crypto.getRandomValues(a);roomPin=String(100000+(a[0]%900000));}
+ setPhoneStatus("Conectando ao serviço de sinalização...");$("roomDetails").classList.add("hidden");
+ peer=new Peer(undefined,{host:"0.peerjs.com",port:443,path:"/",secure:true,debug:2});
+ peer.on("open",id=>{$("roomCode").textContent=id;$("roomPassword").textContent=roomPin;$("roomDetails").classList.remove("hidden");setPhoneStatus("Aguardando o iPad...");});
+ peer.on("connection",conn=>{
+   if(activeConn&&activeConn.open){conn.close();return;}
+   activeConn=conn;let accepted=false;
+   conn.on("open",()=>setPhoneStatus("Dispositivo encontrado; verificando senha..."));
+   conn.on("data",msg=>{
+     if(!accepted){
+       if(msg&&msg.type==="join"&&msg.pin===roomPin){accepted=true;roomAuthorized=true;conn.send({type:"welcome",candidates,total,blanks,votes,closed,released:false});setPhoneStatus("iPad conectado!");}
+       else {conn.send({type:"denied"});conn.close();activeConn=null;setPhoneStatus("Tentativa recusada. Confira a senha.");}
+       return;
+     }
+     if(!msg||typeof msg!=="object")return;
+     if(msg.type==="cast"){
+       if(!released||closed||msg.seq!==releaseSeq||total>=MAX_VOTERS)return;
+       if(msg.choice==="blank")blanks++;
+       else if(Number.isInteger(msg.choice)&&msg.choice>=0&&msg.choice<candidates.length)votes[msg.choice]++;
+       else return;
+       total++;released=false;persist();renderStats();
+       conn.send({type:"accepted",total,blanks,votes,closed});
+       $("adminState").textContent="Voto registrado. Libere o próximo aluno quando estiver pronto.";
+       updateHeader();
+     }
+   });
+   conn.on("close",()=>{if(activeConn===conn){activeConn=null;roomAuthorized=false;setPhoneStatus("iPad desconectado");}});
+   conn.on("error",()=>setPhoneStatus("Erro na conexão com o iPad."));
+ });
+ peer.on("error",err=>{setPhoneStatus("Falha na conexão: "+(err.type||"erro")+". Tente criar outra sala.");});
+}
+function connectToPhone(){
+ if(typeof Peer==="undefined"){alert("Não foi possível carregar o módulo de conexão. Abra o arquivo com internet e tente novamente.");return;}
+ const host=$("hostCode").value.trim(),pin=$("roomPin").value.trim();
+ if(!host||!/^\d{6}$/.test(pin)){alert("Digite o código do iPhone e a senha de 6 números.");return;}
+ if(peer&&!peer.destroyed)peer.destroy();
+ remoteMode=true;roomAuthorized=false;setIpadStatus("Conectando...");
+ peer=new Peer(undefined,{host:"0.peerjs.com",port:443,path:"/",secure:true,debug:2});
+ peer.on("open",()=>{const conn=peer.connect(host,{reliable:true});activeConn=conn;
+   conn.on("open",()=>{conn.send({type:"join",pin});setIpadStatus("Verificando acesso...");});
+   conn.on("data",msg=>{
+     if(!msg||typeof msg!=="object")return;
+     if(msg.type==="denied"){setIpadStatus("Senha incorreta ou sala indisponível.");conn.close();return;}
+     if(msg.type==="welcome"){
+       roomAuthorized=true;candidates=msg.candidates||candidates;votes=msg.votes||votes;blanks=msg.blanks||0;total=msg.total||0;closed=!!msg.closed;released=false;
+       setIpadStatus("Conectado ao iPhone");$("ipadConnectBox").classList.add("hidden");
+       $("locked").classList.remove("hidden");$("ballotArea").classList.add("hidden");$("finished").classList.add("hidden");updateHeader();
+     }
+     if(msg.type==="release"){
+       if(!roomAuthorized||closed)return;
+       released=true;releaseSeq=msg.seq;digits="";selected=null;
+       $("locked").classList.add("hidden");$("finished").classList.add("hidden");$("ballotArea").classList.remove("hidden");resetBallot();updateHeader();
+     }
+     if(msg.type==="accepted"){
+       playUrnaSound();
+       pendingRemoteVote=false;released=false;total=msg.total;blanks=msg.blanks;votes=msg.votes;renderStats();
+       $("ballotArea").classList.add("hidden");$("locked").classList.add("hidden");$("finished").classList.remove("hidden");updateHeader();
+     }
+     if(msg.type==="state"){
+       closed=!!msg.closed;released=!!msg.released;total=msg.total||0;updateHeader();
+       if(closed){$("ballotArea").classList.add("hidden");$("locked").classList.remove("hidden");$("locked").innerHTML='<p>ELEIÇÃO ENCERRADA</p><div class="big">Obrigado por participar!</div>';}
+     }
+   });
+   conn.on("close",()=>{roomAuthorized=false;released=false;setIpadStatus("Conexão perdida. Recarregue para tentar novamente.");$("ipadConnectBox").classList.remove("hidden");});
+   conn.on("error",()=>setIpadStatus("Não foi possível conectar. Confira o código e a internet."));
+ });
+ peer.on("error",err=>setIpadStatus("Falha: "+(err.type||"erro")+". No iPhone, crie uma nova sala e mantenha a página aberta."));
+}
+$("createRoomBtn").onclick=makeRoom;
+$("connectBtn").onclick=connectToPhone;
+function showTab(id){if(document.fullscreenElement&&document.fullscreenElement.id==="vote")document.exitFullscreen().catch(()=>{});document.querySelectorAll(".tab").forEach(b=>b.classList.toggle("active",b.dataset.tab===id));["vote","admin","setup"].forEach(x=>$(x).classList.toggle("hidden",x!==id));}
+$("fullscreenBtn").onclick=async()=>{try{if(!document.fullscreenElement){await $("vote").requestFullscreen();}else{await document.exitFullscreen();}}catch(e){alert("A tela cheia não foi autorizada pelo navegador. Tente abrir a urna no Safari e tocar novamente no botão.");}};
+document.addEventListener("fullscreenchange",()=>{$("fullscreenBtn").textContent=document.fullscreenElement?"SAIR DA TELA CHEIA":"⛶ TELA CHEIA";});
+document.querySelectorAll(".tab").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
+function resetBallot(){digits="";selected=null;$("digitDisplay").textContent="_ _";$("candidateInfo").classList.add("hidden");$("ballotMessage").textContent="Use o teclado numérico na tela.";}
+function matchCandidate(){selected=candidates.findIndex(c=>String(c.num).padStart(2,"0")===digits);if(selected>=0){let c=candidates[selected];$("candidateInfo").classList.remove("hidden");$("ballotPhoto").src=c.photo||"";$("ballotNumber").textContent=c.num;$("ballotName").textContent=c.name||"Sem nome";$("ballotMessage").textContent="Confira os dados e toque em CONFIRMA.";}else{$("candidateInfo").classList.add("hidden");$("ballotMessage").textContent="Número não encontrado. Toque em CORRIGE."}}
+document.querySelectorAll("[data-digit]").forEach(b=>b.onclick=()=>{if(!released||closed||digits.length>=2)return;digits+=b.dataset.digit;$("digitDisplay").textContent=digits.padEnd(2,"_").split("").join(" ");if(digits.length===2)matchCandidate();});
+$("correctBtn").onclick=resetBallot;
+function finishVote(isBlank=false){if(!released||closed)return;if(!isBlank&&selected===null){$("ballotMessage").textContent="Digite um número válido ou escolha BRANCO.";return;}
+if(remoteMode){if(!activeConn||!activeConn.open||!roomAuthorized||pendingRemoteVote){$("ballotMessage").textContent="Conexão perdida. Avise o responsável.";return;}pendingRemoteVote=true;activeConn.send({type:"cast",seq:releaseSeq,choice:isBlank?"blank":selected});$("ballotMessage").textContent="Enviando voto...";return;}
+if(isBlank)blanks++;else votes[selected]++;total++;released=false;persist();renderStats();playUrnaSound();$("ballotArea").classList.add("hidden");$("locked").classList.add("hidden");$("finished").classList.remove("hidden");$("adminState").textContent="Voto registrado. Libere o próximo aluno quando estiver pronto.";updateHeader();}
+$("blankBtn").onclick=()=>{if(!released)return;selected=null;$("ballotMessage").textContent="Você escolheu VOTO EM BRANCO. Toque em CONFIRMA para registrar.";$("digitDisplay").textContent="BRANCO";$("candidateInfo").classList.add("hidden");digits="BR";};
+$("confirmBtn").onclick=()=>{if(digits==="BR"){finishVote(true);return;}if(digits.length!==2){$("ballotMessage").textContent="Digite os dois números do candidato.";return;}if(selected===null){$("ballotMessage").textContent="Número não encontrado. Toque em CORRIGE.";return;}finishVote(false);};
+$("releaseBtn").onclick=()=>{if(closed){alert("A eleição foi encerrada.");return;}if(total>=MAX_VOTERS){alert("Limite de 50 votos atingido.");return;}if(released){alert("Já existe uma votação liberada.");return;}if(!activeConn||!activeConn.open||!roomAuthorized){alert("Conecte o iPad antes de liberar uma votação.");return;}released=true;releaseSeq++;sendToIpad({type:"release",seq:releaseSeq});$("adminState").textContent="Votação liberada no iPad — aguardando confirmação.";updateHeader();};
+$("closeBtn").onclick=()=>{if(!confirm("Encerrar a demonstração da eleição?"))return;closed=true;released=false;persist();sendToIpad({type:"state",closed:true,released:false,total,blanks,votes});$("ballotArea").classList.add("hidden");$("locked").classList.remove("hidden");$("adminState").textContent="Eleição encerrada."; $("results").classList.remove("hidden");$("resultRows").innerHTML=candidates.map((c,i)=>`<p><b>${escapeHtml(c.name)}</b> (${c.num}): ${votes[i]} voto(s)</p>`).join("")+`<p>Votos em branco: ${blanks}</p>`;updateHeader();};
+$("resetBtn").onclick=()=>{if(!confirm("Apagar os dados desta demonstração e reiniciar?"))return;votes=[0,0];blanks=0;total=0;closed=false;released=false;releaseSeq=0;persist();sendToIpad({type:"state",closed:false,released:false,total,blanks,votes});renderStats();$("results").classList.add("hidden");$("adminState").textContent="Urna bloqueada — pronta para liberar o próximo voto.";updateHeader();$("finished").classList.add("hidden");$("ballotArea").classList.add("hidden");$("locked").classList.remove("hidden");};
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+[1,2].forEach(i=>{$("photo"+i).onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const max=360,scale=Math.min(1,max/Math.max(img.width,img.height));const canvas=document.createElement("canvas");canvas.width=Math.max(1,Math.round(img.width*scale));canvas.height=Math.max(1,Math.round(img.height*scale));canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);const compact=canvas.toDataURL("image/jpeg",0.68);$("preview"+i).src=compact;candidates[i-1].photo=compact;};img.src=r.result;};r.readAsDataURL(f);};});
+$("saveCandidates").onclick=()=>{candidates=[1,2].map(i=>({name:$("name"+i).value.trim()||"Candidato "+i,num:String($("num"+i).value|| (i===1?11:22)).padStart(2,"0"),photo:candidates[i-1].photo||""}));if(candidates[0].num===candidates[1].num){alert("Os números dos candidatos precisam ser diferentes.");return;}persist();$("saveMsg").textContent="Candidatos salvos neste aparelho.";};
+load();[1,2].forEach(i=>{$("name"+i).value=candidates[i-1].name;$("num"+i).value=parseInt(candidates[i-1].num,10);if(candidates[i-1].photo)$("preview"+i).src=candidates[i-1].photo;});renderStats();updateHeader();
+</script>
+</body></html>
